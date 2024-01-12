@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VacaBook.Web", "VacaBookWeb\VacaBook.Web.csproj", "{4625D1A6-89CE-47D2-B9FA-57636904D2E8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VacaBook.Web", "VacaBook.Web\VacaBook.Web.csproj", "{4625D1A6-89CE-47D2-B9FA-57636904D2E8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VacaBook.Domain", "VacaBook.Domain\VacaBook.Domain.csproj", "{A6FA09D0-80C2-4D38-BCC5-239F1416C76A}"
 EndProject

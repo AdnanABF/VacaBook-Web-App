@@ -1,4 +1,4 @@
-namespace VacaBookWeb.Models
+namespace VacaBook.Web.Models
 {
     public class ErrorViewModel
     {

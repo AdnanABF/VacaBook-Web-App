@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
-using VacaBookWeb.Models;
+using VacaBook.Web.Models;
 
-namespace VacaBookWeb.Controllers
+namespace VacaBook.Web.Controllers
 {
     public class HomeController : Controller
     {
