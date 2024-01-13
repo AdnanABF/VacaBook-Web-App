@@ -11,66 +11,23 @@ using VacaBook.Infrastructure.Data;
 
 namespace VacaBook.Infrastructure.Repository
 {
-    public class VillaRepository : IVillaRepository
+    public class VillaRepository : Repository<Villa>, IVillaRepository
     {
-        private readonly ApplicationDbContext _DbContext;
+        private readonly ApplicationDbContext _dbContext;
 
-        public VillaRepository(ApplicationDbContext context)
+        public VillaRepository(ApplicationDbContext context) : base(context)
         {
-            _DbContext = context;
-        }
-        public void Add(Villa entity)
-        {
-            _DbContext.Add(entity);
-        }
-
-        public Villa Get(Expression<Func<Villa, bool>> filter, string? includeProperties = null)
-        {
-            IQueryable<Villa> query = _DbContext.Set<Villa>();
-            if (filter is not null)
-            {
-                query = query.Where(filter);
-            }
-            if (!string.IsNullOrEmpty(includeProperties))
-            {
-                foreach (var prop in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-                {
-                    query = query.Include(prop);
-                }
-            }
-            return query.FirstOrDefault();
-        }
-
-        public IEnumerable<Villa> GetAll(Expression<Func<Villa, bool>>? filter = null, string? includeProperties = null)
-        {
-            IQueryable<Villa> query = _DbContext.Set<Villa>();
-            if (filter is not null)
-            {
-                query = query.Where(filter);
-            }
-            if (!string.IsNullOrEmpty(includeProperties))
-            {
-                foreach (var prop in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-                {
-                    query = query.Include(prop);
-                }
-            }
-            return query.ToList();
-        }
-
-        public void Remove(Villa entity)
-        {
-            _DbContext.Remove(entity);
+            _dbContext = context;
         }
 
         public void Save()
         {
-            _DbContext.SaveChanges();
+            _dbContext.SaveChanges();
         }
 
         public void Update(Villa entity)
         {
-            _DbContext.Update(entity);
+            _dbContext.Update(entity);
         }
     }
 }

@@ -7,15 +7,15 @@ namespace VacaBook.Web.Controllers
 {
     public class VillaController : Controller
     {
-        private readonly IVillaRepository _villaRepo;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public VillaController(IVillaRepository villaRepo)
+        public VillaController(IUnitOfWork unitOfWork)
         {
-            _villaRepo = villaRepo;
+            _unitOfWork = unitOfWork;
         }
         public IActionResult Index()
         {
-            var villas = _villaRepo.GetAll();
+            var villas = _unitOfWork.Villa.GetAll();
             return View(villas);
         }
 
@@ -33,8 +33,8 @@ namespace VacaBook.Web.Controllers
             }
             if (ModelState.IsValid)
             {
-                _villaRepo.Add(villa);
-                _villaRepo.Save();
+                _unitOfWork.Villa.Add(villa);
+                _unitOfWork.Villa.Save();
                 TempData["success"] = "The villa has been created successfully";
                 return RedirectToAction(nameof(Index));
             }
@@ -43,7 +43,7 @@ namespace VacaBook.Web.Controllers
 
         public IActionResult Update(int villaId)
         {
-            var villa = _villaRepo.Get(u => u.Id == villaId);
+            var villa = _unitOfWork.Villa.Get(u => u.Id == villaId);
             if (villa == null)
             {
                 return RedirectToAction("Error", "Home");
@@ -57,8 +57,8 @@ namespace VacaBook.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                _villaRepo.Update(villa);
-                _villaRepo.Save(); 
+                _unitOfWork.Villa.Update(villa);
+                _unitOfWork.Villa.Save(); 
                 TempData["success"] = "The villa has been updated successfully";
                 return RedirectToAction(nameof(Index));
             }
@@ -67,7 +67,7 @@ namespace VacaBook.Web.Controllers
 
         public IActionResult Delete(int villaId)
         {
-            var villa = _villaRepo.Get(x => x.Id == villaId);
+            var villa = _unitOfWork.Villa.Get(x => x.Id == villaId);
             if (villa is null)
             {
                 return RedirectToAction("Error", "Home");
@@ -79,11 +79,11 @@ namespace VacaBook.Web.Controllers
         [HttpPost]
         public IActionResult Delete(Villa villa)
         {
-            var villaDetails = _villaRepo.Get(x => x.Id == villa.Id);
+            var villaDetails = _unitOfWork.Villa.Get(x => x.Id == villa.Id);
             if (villaDetails is not null)
             {
-                _villaRepo.Remove(villaDetails);
-                _villaRepo.Save();
+                _unitOfWork.Villa.Remove(villaDetails);
+                _unitOfWork.Villa.Save();
                 TempData["success"] = "The villa has been deleted successfully";
                 return RedirectToAction(nameof(Index));
             }
