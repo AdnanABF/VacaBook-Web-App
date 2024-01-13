@@ -18,4 +18,9 @@
     <ProjectReference Include="..\VacaBook.Infrastructure\VacaBook.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\UploadImages\Villa\" />
+    <Folder Include="wwwroot\UploadImages\" />
+  </ItemGroup>
+
 </Project>
