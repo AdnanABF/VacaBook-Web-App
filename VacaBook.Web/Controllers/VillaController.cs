@@ -35,7 +35,7 @@ namespace VacaBook.Web.Controllers
                 _DbContext.Villas.Add(villa);
                 _DbContext.SaveChanges();
                 TempData["success"] = "The villa has been created successfully";
-                return RedirectToAction("Index");
+                return RedirectToAction(nameof(Index));
             }
             return View(villa);
         }
@@ -59,7 +59,7 @@ namespace VacaBook.Web.Controllers
                 _DbContext.Villas.Update(villa);
                 _DbContext.SaveChanges();
                 TempData["success"] = "The villa has been updated successfully";
-                return RedirectToAction("Index");
+                return RedirectToAction(nameof(Index));
             }
             return View(villa);
         }
@@ -84,7 +84,7 @@ namespace VacaBook.Web.Controllers
                 _DbContext.Villas.Remove(villaDetails);
                 _DbContext.SaveChanges();
                 TempData["success"] = "The villa has been deleted successfully";
-                return RedirectToAction("Index");
+                return RedirectToAction(nameof(Index));
             }
             TempData["error"] = "The villa could not be deleted";
             return RedirectToAction("Error", "Home");

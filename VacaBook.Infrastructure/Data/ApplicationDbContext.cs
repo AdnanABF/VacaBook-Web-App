@@ -15,6 +15,7 @@ namespace VacaBook.Infrastructure.Data
         }
 
         public DbSet<Villa> Villas { get; set; }
+        public DbSet<VillaNumber> VillaNumbers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -29,6 +30,27 @@ namespace VacaBook.Infrastructure.Data
                 Occupancy = 4,
                 Price = 1000,
                 Sqft = 1000
+            });
+
+            modelBuilder.Entity<VillaNumber>().HasData(new VillaNumber
+            {
+                Villa_Number = 101,
+                VillaId = 1
+            },
+            new VillaNumber
+            {
+                Villa_Number = 102,
+                VillaId = 1
+            },
+            new VillaNumber
+            {
+                Villa_Number = 103,
+                VillaId = 1
+            },
+            new VillaNumber
+            {
+                Villa_Number = 104,
+                VillaId = 1
             });
         }
     }
