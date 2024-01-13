@@ -34,7 +34,7 @@ namespace VacaBook.Web.Controllers
             if (ModelState.IsValid)
             {
                 _unitOfWork.Villa.Add(villa);
-                _unitOfWork.Villa.Save();
+                _unitOfWork.Save();
                 TempData["success"] = "The villa has been created successfully";
                 return RedirectToAction(nameof(Index));
             }
@@ -58,7 +58,7 @@ namespace VacaBook.Web.Controllers
             if (ModelState.IsValid)
             {
                 _unitOfWork.Villa.Update(villa);
-                _unitOfWork.Villa.Save(); 
+                _unitOfWork.Save();
                 TempData["success"] = "The villa has been updated successfully";
                 return RedirectToAction(nameof(Index));
             }
@@ -83,7 +83,7 @@ namespace VacaBook.Web.Controllers
             if (villaDetails is not null)
             {
                 _unitOfWork.Villa.Remove(villaDetails);
-                _unitOfWork.Villa.Save();
+                _unitOfWork.Save();
                 TempData["success"] = "The villa has been deleted successfully";
                 return RedirectToAction(nameof(Index));
             }

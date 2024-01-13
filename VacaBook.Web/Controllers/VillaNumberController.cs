@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using VacaBook.Application.Common.Interfaces;
 using VacaBook.Domain.Entities;
 using VacaBook.Infrastructure.Data;
 using VacaBook.Web.ViewModels;
@@ -9,15 +10,15 @@ namespace VacaBook.Web.Controllers
 {
     public class VillaNumberController : Controller
     {
-        private readonly ApplicationDbContext _DbContext;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public VillaNumberController(ApplicationDbContext context)
+        public VillaNumberController(IUnitOfWork unitOfWork)
         {
-            _DbContext = context;
+            _unitOfWork = unitOfWork;
         }
         public IActionResult Index()
         {
-            var villaNumbers = _DbContext.VillaNumbers.Include(x => x.Villa).ToList();
+            var villaNumbers = _unitOfWork.VillaNumber.GetAll(includeProperties: "Villa");
             return View(villaNumbers);
         }
 
@@ -25,7 +26,7 @@ namespace VacaBook.Web.Controllers
         {
             VillaNumberViewModel villaNumberViewModel = new()
             {
-                VillaList = _DbContext.Villas.ToList().Select(x => new SelectListItem
+                VillaList = _unitOfWork.Villa.GetAll().Select(x => new SelectListItem
                 {
                     Text = x.Name,
                     Value = x.Id.ToString()
@@ -38,12 +39,12 @@ namespace VacaBook.Web.Controllers
         [HttpPost]
         public IActionResult Create(VillaNumberViewModel villaNumberVM)
         {
-            var isVillaNumberExists = _DbContext.VillaNumbers.Any(x => x.Villa_Number == villaNumberVM.VillaNumber.Villa_Number);
+            var isVillaNumberExists = _unitOfWork.VillaNumber.Any(x => x.Villa_Number == villaNumberVM.VillaNumber.Villa_Number);
 
             if (ModelState.IsValid && !isVillaNumberExists)
             {
-                _DbContext.VillaNumbers.Add(villaNumberVM.VillaNumber);
-                _DbContext.SaveChanges();
+                _unitOfWork.VillaNumber.Add(villaNumberVM.VillaNumber);
+                _unitOfWork.Save();
                 TempData["success"] = "The villa number has been created successfully";
                 return RedirectToAction(nameof(Index));
             }
@@ -52,7 +53,7 @@ namespace VacaBook.Web.Controllers
                 TempData["error"] = "The villa number already exists";
             }
 
-            villaNumberVM.VillaList = _DbContext.Villas.ToList().Select(x => new SelectListItem
+            villaNumberVM.VillaList = _unitOfWork.Villa.GetAll().Select(x => new SelectListItem
             {
                 Text = x.Name,
                 Value = x.Id.ToString()
@@ -65,12 +66,12 @@ namespace VacaBook.Web.Controllers
         {
             VillaNumberViewModel villaNumberViewModel = new()
             {
-                VillaList = _DbContext.Villas.ToList().Select(x => new SelectListItem
+                VillaList = _unitOfWork.Villa.GetAll().Select(x => new SelectListItem
                 {
                     Text = x.Name,
                     Value = x.Id.ToString()
                 }),
-                VillaNumber = _DbContext.VillaNumbers.FirstOrDefault(x=>x.Villa_Number == villaNumberId)
+                VillaNumber = _unitOfWork.VillaNumber.Get(x => x.Villa_Number == villaNumberId)
             };
 
             if (villaNumberViewModel.VillaNumber == null)
@@ -86,13 +87,13 @@ namespace VacaBook.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                _DbContext.VillaNumbers.Update(villaNumberVM.VillaNumber);
-                _DbContext.SaveChanges();
+                _unitOfWork.VillaNumber.Update(villaNumberVM.VillaNumber);
+                _unitOfWork.Save();
                 TempData["success"] = "The villa number has been updated successfully";
                 return RedirectToAction(nameof(Index));
             }
 
-            villaNumberVM.VillaList = _DbContext.Villas.ToList().Select(x => new SelectListItem
+            villaNumberVM.VillaList = _unitOfWork.Villa.GetAll().Select(x => new SelectListItem
             {
                 Text = x.Name,
                 Value = x.Id.ToString()
@@ -105,12 +106,12 @@ namespace VacaBook.Web.Controllers
         {
             VillaNumberViewModel villaNumberViewModel = new()
             {
-                VillaList = _DbContext.Villas.ToList().Select(x => new SelectListItem
+                VillaList = _unitOfWork.Villa.GetAll().Select(x => new SelectListItem
                 {
                     Text = x.Name,
                     Value = x.Id.ToString()
                 }),
-                VillaNumber = _DbContext.VillaNumbers.FirstOrDefault(x => x.Villa_Number == villaNumberId)
+                VillaNumber = _unitOfWork.VillaNumber.Get(x => x.Villa_Number == villaNumberId)
             };
 
             if (villaNumberViewModel.VillaNumber == null)
@@ -124,11 +125,11 @@ namespace VacaBook.Web.Controllers
         [HttpPost]
         public IActionResult Delete(VillaNumberViewModel villaNumberVM)
         {
-            var villaNumberDetails = _DbContext.VillaNumbers.FirstOrDefault(x => x.Villa_Number == villaNumberVM.VillaNumber.Villa_Number);
+            var villaNumberDetails = _unitOfWork.VillaNumber.Get(x => x.Villa_Number == villaNumberVM.VillaNumber.Villa_Number);
             if (villaNumberDetails is not null)
             {
-                _DbContext.VillaNumbers.Remove(villaNumberDetails);
-                _DbContext.SaveChanges();
+                _unitOfWork.VillaNumber.Remove(villaNumberDetails);
+                _unitOfWork.Save();
                 TempData["success"] = "The villa number has been deleted successfully";
                 return RedirectToAction(nameof(Index));
             }

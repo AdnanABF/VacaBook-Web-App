@@ -12,10 +12,17 @@ namespace VacaBook.Infrastructure.Repository
     {
         private readonly ApplicationDbContext _dbContext;
         public IVillaRepository Villa {  get; private set; }
+        public IVillaNumberRepository VillaNumber {  get; private set; }
         public UnitOfWork(ApplicationDbContext db)
         {
             _dbContext = db;
             Villa = new VillaRepository(_dbContext);
+            VillaNumber = new VillaNumberRepository(_dbContext);
+        }
+
+        public void Save()
+        {
+            _dbContext.SaveChanges();
         }
     }
 }

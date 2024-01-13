@@ -1,8 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using VacaBook.Application.Common.Interfaces;
@@ -11,18 +9,18 @@ using VacaBook.Infrastructure.Data;
 
 namespace VacaBook.Infrastructure.Repository
 {
-    public class VillaRepository : Repository<Villa>, IVillaRepository
+    public class VillaNumberRepository : Repository<VillaNumber>, IVillaNumberRepository
     {
         private readonly ApplicationDbContext _dbContext;
 
-        public VillaRepository(ApplicationDbContext context) : base(context)
+        public VillaNumberRepository(ApplicationDbContext dbContext) : base(dbContext)
         {
-            _dbContext = context;
+            _dbContext = dbContext;
         }
 
-        public void Update(Villa entity)
+        public void Update(VillaNumber entity)
         {
-            _dbContext.Villas.Update(entity);
+            _dbContext.VillaNumbers.Update(entity);
         }
     }
 }

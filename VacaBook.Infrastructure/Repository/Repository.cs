@@ -26,6 +26,11 @@ namespace VacaBook.Infrastructure.Repository
             dbSet.Add(entity);
         }
 
+        public bool Any(Expression<Func<T, bool>> filter)
+        {
+            return dbSet.Any(filter);
+        }
+
         public T Get(Expression<Func<T, bool>> filter, string? includeProperties = null)
         {
             IQueryable<T> query = dbSet;
