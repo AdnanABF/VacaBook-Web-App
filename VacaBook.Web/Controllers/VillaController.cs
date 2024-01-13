@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using VacaBook.Application.Common.Interfaces;
 using VacaBook.Domain.Entities;
 using VacaBook.Infrastructure.Data;
 
@@ -6,15 +7,15 @@ namespace VacaBook.Web.Controllers
 {
     public class VillaController : Controller
     {
-        private readonly ApplicationDbContext _DbContext;
+        private readonly IVillaRepository _villaRepo;
 
-        public VillaController(ApplicationDbContext context)
+        public VillaController(IVillaRepository villaRepo)
         {
-            _DbContext = context;
+            _villaRepo = villaRepo;
         }
         public IActionResult Index()
         {
-            var villas = _DbContext.Villas.ToList();
+            var villas = _villaRepo.GetAll();
             return View(villas);
         }
 
@@ -32,8 +33,8 @@ namespace VacaBook.Web.Controllers
             }
             if (ModelState.IsValid)
             {
-                _DbContext.Villas.Add(villa);
-                _DbContext.SaveChanges();
+                _villaRepo.Add(villa);
+                _villaRepo.Save();
                 TempData["success"] = "The villa has been created successfully";
                 return RedirectToAction(nameof(Index));
             }
@@ -42,7 +43,7 @@ namespace VacaBook.Web.Controllers
 
         public IActionResult Update(int villaId)
         {
-            var villa = _DbContext.Villas.FirstOrDefault(x => x.Id == villaId);
+            var villa = _villaRepo.Get(u => u.Id == villaId);
             if (villa == null)
             {
                 return RedirectToAction("Error", "Home");
@@ -56,8 +57,8 @@ namespace VacaBook.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                _DbContext.Villas.Update(villa);
-                _DbContext.SaveChanges();
+                _villaRepo.Update(villa);
+                _villaRepo.Save(); 
                 TempData["success"] = "The villa has been updated successfully";
                 return RedirectToAction(nameof(Index));
             }
@@ -66,7 +67,7 @@ namespace VacaBook.Web.Controllers
 
         public IActionResult Delete(int villaId)
         {
-            var villa = _DbContext.Villas.FirstOrDefault(x => x.Id == villaId);
+            var villa = _villaRepo.Get(x => x.Id == villaId);
             if (villa is null)
             {
                 return RedirectToAction("Error", "Home");
@@ -78,11 +79,11 @@ namespace VacaBook.Web.Controllers
         [HttpPost]
         public IActionResult Delete(Villa villa)
         {
-            var villaDetails = _DbContext.Villas.FirstOrDefault(x => x.Id == villa.Id);
+            var villaDetails = _villaRepo.Get(x => x.Id == villa.Id);
             if (villaDetails is not null)
             {
-                _DbContext.Villas.Remove(villaDetails);
-                _DbContext.SaveChanges();
+                _villaRepo.Remove(villaDetails);
+                _villaRepo.Save();
                 TempData["success"] = "The villa has been deleted successfully";
                 return RedirectToAction(nameof(Index));
             }

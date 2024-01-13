@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\VacaBook.Domain\VacaBook.Domain.csproj" />
+    <ProjectReference Include="..\VacaBook.Application\VacaBook.Application.csproj" />
   </ItemGroup>
 
 </Project>

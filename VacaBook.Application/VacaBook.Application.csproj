@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\VacaBook.Domain\VacaBook.Domain.csproj" />
+  </ItemGroup>
+
 </Project>
