@@ -16,6 +16,7 @@ namespace VacaBook.Infrastructure.Data
 
         public DbSet<Villa> Villas { get; set; }
         public DbSet<VillaNumber> VillaNumbers { get; set; }
+        public DbSet<Amenity> Amenities { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -51,6 +52,19 @@ namespace VacaBook.Infrastructure.Data
             {
                 Villa_Number = 104,
                 VillaId = 1
+            });
+
+            modelBuilder.Entity<Amenity>().HasData(new Amenity
+            {
+                Id = 1,
+                VillaId = 1,
+                Name = "Private Pool"
+            },
+            new Amenity
+            {
+                Id = 2,
+                VillaId = 1,
+                Name = "Private Theatre"
             });
         }
     }
