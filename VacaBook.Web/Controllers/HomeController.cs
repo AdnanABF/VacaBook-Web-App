@@ -1,21 +1,29 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using VacaBook.Application.Common.Interfaces;
 using VacaBook.Web.Models;
+using VacaBook.Web.ViewModels;
 
 namespace VacaBook.Web.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(IUnitOfWork unitOfWork)
         {
-            _logger = logger;
+            _unitOfWork = unitOfWork;
         }
 
         public IActionResult Index()
         {
-            return View();
+            HomeViewModel homeVM = new()
+            {
+                VillaList = _unitOfWork.Villa.GetAll(includeProperties: "VillaAmenity"),
+                Nights = 1,
+                CheckInDate = DateOnly.FromDateTime(DateTime.Now),
+            };
+            return View(homeVM);
         }
 
         public IActionResult Privacy()

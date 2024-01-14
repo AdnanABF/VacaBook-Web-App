@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -16,10 +17,10 @@ namespace VacaBook.Domain.Entities
         public required string Name { get; set; }
         public string? Description { get; set; }
         [Display(Name = "Price per night")]
-        [Range(10,10000)]
+        [Range(10, 10000)]
         public double Price { get; set; }
         public int Sqft { get; set; }
-        [Range(1,10)]
+        [Range(1, 10)]
         public int Occupancy { get; set; }
         [NotMapped]
         public IFormFile? Image { get; set; }
@@ -27,6 +28,9 @@ namespace VacaBook.Domain.Entities
         public string? ImageUrl { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? UpdatedDate { get; set; }
+
+        [ValidateNever]
+        public IEnumerable<Amenity> VillaAmenity { get; set; }
 
     }
 }
