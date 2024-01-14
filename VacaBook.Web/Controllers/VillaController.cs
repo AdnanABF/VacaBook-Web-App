@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using VacaBook.Application.Common.Interfaces;
 using VacaBook.Domain.Entities;
 using VacaBook.Infrastructure.Data;
 
 namespace VacaBook.Web.Controllers
 {
+    [Authorize]
     public class VillaController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;

@@ -1,13 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using VacaBook.Application.Common.Interfaces;
+using VacaBook.Application.Common.Utility;
 using VacaBook.Domain.Entities;
 using VacaBook.Infrastructure.Data;
 using VacaBook.Web.ViewModels;
 
 namespace VacaBook.Web.Controllers
 {
+    [Authorize(Roles = SD.Role_Admin)]
     public class AmenityController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
