@@ -34,7 +34,7 @@ namespace VacaBook.Domain.Entities
         [Required]
         public double TotalCost { get; set; }
 
-        public int Night { get; set; }
+        public int Nights { get; set; }
 
         public string? Status { get; set; }
 
@@ -42,10 +42,10 @@ namespace VacaBook.Domain.Entities
         public DateTime BookingDate { get; set; }
 
         [Required]
-        public DateTime CheckInDate { get; set; }
+        public DateOnly CheckInDate { get; set; }
 
         [Required]
-        public DateTime CheckOutDate { get; set; }
+        public DateOnly CheckOutDate { get; set; }
 
         public bool IsPaymentSuccessful { get; set; }
 

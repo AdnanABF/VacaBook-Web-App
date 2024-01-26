@@ -21,26 +21,12 @@ namespace VacaBook.Web.Controllers
             {
                 VillaList = _unitOfWork.Villa.GetAll(includeProperties: "VillaAmenity"),
                 Nights = 1,
-                CheckInDate = DateOnly.FromDateTime(DateTime.Now),
+                CheckInDate = DateOnly.FromDateTime(DateTime.Now.Date),
             };
             return View(homeVM);
         }
 
         [HttpPost]
-        public IActionResult Index(HomeViewModel homeViewModel)
-        {
-            homeViewModel.VillaList = _unitOfWork.Villa.GetAll(includeProperties: "VillaAmenity");
-            foreach (var villa in homeViewModel.VillaList)
-            {
-                if (villa.Id % 2 == 0)
-                {
-                    villa.IsAvailable = false;
-                }
-            }
-
-            return View(homeViewModel);
-        }
-
         public IActionResult GetVillasByDate(int nights, DateOnly checkInDate)
         {
             var villaList = _unitOfWork.Villa.GetAll(includeProperties: "VillaAmenity").ToList();

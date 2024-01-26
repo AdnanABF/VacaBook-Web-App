@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Stripe;
+using System.Globalization;
 using VacaBook.Application.Common.Interfaces;
 using VacaBook.Domain.Entities;
 using VacaBook.Infrastructure.Data;
@@ -26,8 +28,17 @@ builder.Services.Configure<IdentityOptions>(option =>
     option.Password.RequiredLength = 6;
 });
 
+var defaultCulture = builder.Configuration.GetSection("CultureSettings")["CultureCode"];
+if (!string.IsNullOrEmpty(defaultCulture))
+{
+    CultureInfo.DefaultThreadCurrentCulture = new CultureInfo(defaultCulture);
+    CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo(defaultCulture);
+}
+
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 var app = builder.Build();
+
+StripeConfiguration.ApiKey = builder.Configuration.GetSection("Stripe:SecretKey").Get<string>();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

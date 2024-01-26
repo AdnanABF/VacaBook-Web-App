@@ -15,6 +15,7 @@ namespace VacaBook.Infrastructure.Repository
         public IVillaNumberRepository VillaNumber { get; private set; }
         public IAmenityRepository Amenity { get; private set; }
         public IBookingRepository Booking { get; private set; }
+        public IApplicationUserRepository User { get; private set; }
         public UnitOfWork(ApplicationDbContext db)
         {
             _dbContext = db;
@@ -22,6 +23,7 @@ namespace VacaBook.Infrastructure.Repository
             VillaNumber = new VillaNumberRepository(_dbContext);
             Amenity = new AmenityRepository(_dbContext);
             Booking = new BookingRepository(_dbContext);
+            User = new ApplicationUserRepository(_dbContext);
         }
 
         public void Save()
