@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using VacaBook.Application.Common.Interfaces;
+using VacaBook.Application.Common.Utility;
 using VacaBook.Web.Models;
 using VacaBook.Web.ViewModels;
 
@@ -30,12 +31,15 @@ namespace VacaBook.Web.Controllers
         public IActionResult GetVillasByDate(int nights, DateOnly checkInDate)
         {
             var villaList = _unitOfWork.Villa.GetAll(includeProperties: "VillaAmenity").ToList();
+            var villaNumbersList = _unitOfWork.VillaNumber.GetAll().ToList();
+            var bookedVillas = _unitOfWork.Booking.GetAll(x => x.Status == SD.StatusApproved || x.Status == SD.StatusCheckedIn).ToList();
+
+
             foreach (var villa in villaList)
             {
-                if (villa.Id % 2 == 0)
-                {
-                    villa.IsAvailable = false;
-                }
+                int roomsAvailable = SD.VillaRoomsAvailable_Count(villa.Id, villaNumbersList, checkInDate, nights, bookedVillas);
+
+                villa.IsAvailable = roomsAvailable > 0 ? true : false;
             }
 
             HomeViewModel homeViewModel = new()
