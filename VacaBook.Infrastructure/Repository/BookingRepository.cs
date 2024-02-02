@@ -42,7 +42,7 @@ namespace VacaBook.Infrastructure.Repository
             }
         }
 
-        public void UpdateStatus(int bookingId, string bookingStatus)
+        public void UpdateStatus(int bookingId, string bookingStatus, int villaNumber = 0)
         {
             var bookingFromDb = _dbContext.Bookings.FirstOrDefault(x => x.Id == bookingId);
             if (bookingFromDb != null)
@@ -50,6 +50,7 @@ namespace VacaBook.Infrastructure.Repository
                 bookingFromDb.Status = bookingStatus;
                 if (bookingStatus == SD.StatusCheckedIn)
                 {
+                    bookingFromDb.VillaNumber = villaNumber;
                     bookingFromDb.ActualCheckInDate = DateTime.Now;
                 }
                 if (bookingStatus == SD.StatusCompleted)
