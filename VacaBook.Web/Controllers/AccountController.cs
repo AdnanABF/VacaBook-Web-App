@@ -44,13 +44,21 @@ namespace VacaBook.Web.Controllers
 
                 if (result.Succeeded)
                 {
-                    if (string.IsNullOrEmpty(loginViewModel.RedirectUrl))
+                    var user = await _userManager.FindByNameAsync(loginViewModel.Email);
+                    if (await _userManager.IsInRoleAsync(user, SD.Role_Admin))
                     {
-                        return RedirectToAction("Index", "Home");
+                        return RedirectToAction("Index", "Dashboard");
                     }
                     else
                     {
-                        return LocalRedirect(loginViewModel.RedirectUrl);
+                        if (string.IsNullOrEmpty(loginViewModel.RedirectUrl))
+                        {
+                            return RedirectToAction("Index", "Home");
+                        }
+                        else
+                        {
+                            return LocalRedirect(loginViewModel.RedirectUrl);
+                        }
                     }
                 }
                 else
