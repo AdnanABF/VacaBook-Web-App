@@ -1,6 +1,6 @@
 ﻿namespace VacaBook.Web.ViewModels
 {
-    public class LineChartViewModel
+    public class LineChartDTO
     {
         public List<ChartData> Series { get; set; }
         public string[] Categories { get; set; }

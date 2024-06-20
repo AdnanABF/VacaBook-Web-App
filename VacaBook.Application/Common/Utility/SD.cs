@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using VacaBook.Domain.Entities;
+using VacaBook.Web.ViewModels;
 
 namespace VacaBook.Application.Common.Utility
 {
@@ -53,6 +54,25 @@ namespace VacaBook.Application.Common.Utility
             }
 
             return finalAvailableRoomForAllNights;
+        }
+
+        public static RadialBarChartDTO GetRadiusChartDataModel(int totalCount, double currentMonthCount, double prevMonthCount)
+        {
+            RadialBarChartDTO radialBarChartViewModel = new();
+
+            int increaseDecreaseRatio = 100;
+
+            if (prevMonthCount != 0)
+            {
+                increaseDecreaseRatio = Convert.ToInt32((currentMonthCount - prevMonthCount) / prevMonthCount * 100);
+            }
+
+            radialBarChartViewModel.TotalCount = totalCount;
+            radialBarChartViewModel.CountInCurrentMonth = Convert.ToInt32(currentMonthCount);
+            radialBarChartViewModel.HasRatioIncreased = currentMonthCount > prevMonthCount;
+            radialBarChartViewModel.Series = new int[] { increaseDecreaseRatio };
+
+            return radialBarChartViewModel;
         }
     }
 }

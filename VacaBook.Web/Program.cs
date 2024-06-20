@@ -4,6 +4,8 @@ using Stripe;
 using Syncfusion.Licensing;
 using System.Globalization;
 using VacaBook.Application.Common.Interfaces;
+using VacaBook.Application.Services.Implementation;
+using VacaBook.Application.Services.Interface;
 using VacaBook.Domain.Entities;
 using VacaBook.Infrastructure.Data;
 using VacaBook.Infrastructure.Repository;
@@ -37,6 +39,8 @@ if (!string.IsNullOrEmpty(defaultCulture))
 }
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IDbInitializer, DbInitializer>();
 var app = builder.Build();
 
 StripeConfiguration.ApiKey = builder.Configuration.GetSection("Stripe:SecretKey").Get<string>();
@@ -58,8 +62,19 @@ app.UseRouting();
 
 app.UseAuthorization();
 
+SeedDatabase();
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
+
+void SeedDatabase()
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var DbInitializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
+        DbInitializer.Initialize();
+    }
+}

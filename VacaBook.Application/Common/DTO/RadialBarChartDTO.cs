@@ -1,6 +1,6 @@
 ﻿namespace VacaBook.Web.ViewModels
 {
-    public class RadialBarChartViewModel
+    public class RadialBarChartDTO
     {
         public decimal TotalCount { get; set; }
         public decimal CountInCurrentMonth { get; set; }
