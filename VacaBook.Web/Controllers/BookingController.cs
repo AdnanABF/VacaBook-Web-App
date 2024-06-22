@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.IdentityModel.Tokens;
@@ -13,17 +14,26 @@ using Syncfusion.Pdf;
 using System.Security.Claims;
 using VacaBook.Application.Common.Interfaces;
 using VacaBook.Application.Common.Utility;
+using VacaBook.Application.Services.Interface;
 using VacaBook.Domain.Entities;
+using VacaBook.Infrastructure.Repository;
 
 namespace VacaBook.Web.Controllers
 {
     public class BookingController : Controller
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IBookingService _bookingService;
+        private readonly IVillaService _villaService;
+        private readonly IVillaNumberService _villaNumberService;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly IWebHostEnvironment _webHostEnvironment;
-        public BookingController(IUnitOfWork unitOfWork, IWebHostEnvironment webHostEnvironment)
+        public BookingController(IBookingService bookingService, IVillaService villaService, IVillaNumberService villaNumber,
+            IWebHostEnvironment webHostEnvironment, UserManager<ApplicationUser> userManager)
         {
-            _unitOfWork = unitOfWork;
+            _bookingService = bookingService;
+            _villaService = villaService;
+            _villaNumberService = villaNumber;
+            _userManager = userManager;
             _webHostEnvironment = webHostEnvironment;
         }
 
@@ -39,12 +49,12 @@ namespace VacaBook.Web.Controllers
             var claimsIdentity = (ClaimsIdentity)User.Identity;
             var userId = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-            ApplicationUser user = _unitOfWork.User.Get(x => x.Id == userId);
+            ApplicationUser user = _userManager.FindByIdAsync(userId).GetAwaiter().GetResult();
 
             Booking booking = new()
             {
                 VillaId = villaId,
-                Villa = _unitOfWork.Villa.Get(x => x.Id == villaId, includeProperties: "VillaAmenity"),
+                Villa = _villaService.GetVillaById(villaId),
                 CheckInDate = checkInDate,
                 Nights = nights,
                 CheckOutDate = checkInDate.AddDays(nights),
@@ -61,18 +71,13 @@ namespace VacaBook.Web.Controllers
         [HttpPost]
         public IActionResult FinalizeBooking(Booking booking)
         {
-            var villa = _unitOfWork.Villa.Get(x => x.Id == booking.VillaId);
+            var villa = _villaService.GetVillaById(booking.VillaId);
             booking.TotalCost = villa.Price * booking.Nights;
 
             booking.Status = SD.StatusPending;
             booking.BookingDate = DateTime.Now;
 
-            var villaNumbersList = _unitOfWork.VillaNumber.GetAll().ToList();
-            var bookedVillas = _unitOfWork.Booking.GetAll(x => x.Status == SD.StatusApproved || x.Status == SD.StatusCheckedIn).ToList();
-
-            int roomAvailable = SD.VillaRoomsAvailable_Count(villa.Id, villaNumbersList, booking.CheckInDate, booking.Nights, bookedVillas);
-
-            if (roomAvailable == 0)
+            if (!_villaService.IsVillaAvailableByDate(villa.Id, booking.Nights, booking.CheckInDate))
             {
                 TempData["error"] = "Room has been sold out";
                 return RedirectToAction(nameof(FinalizeBooking), new
@@ -83,8 +88,7 @@ namespace VacaBook.Web.Controllers
                 });
             }
 
-            _unitOfWork.Booking.Add(booking);
-            _unitOfWork.Save();
+            _bookingService.CreateBooking(booking);
 
             var domain = Request.Scheme + "://" + Request.Host.Value + "/";
             var options = new SessionCreateOptions
@@ -115,9 +119,7 @@ namespace VacaBook.Web.Controllers
             var service = new SessionService();
             Session session = service.Create(options);
 
-            _unitOfWork.Booking.UpdatePaymentId(booking.Id, session.Id, session.PaymentIntentId);
-            _unitOfWork.Save();
-
+            _bookingService.UpdatePaymentId(booking.Id, session.Id, session.PaymentIntentId);
             Response.Headers.Add("Location", session.Url);
             return new StatusCodeResult(303);
         }
@@ -125,7 +127,7 @@ namespace VacaBook.Web.Controllers
         [Authorize]
         public IActionResult BookingConfirmation(int bookingId)
         {
-            Booking bookingFromDb = _unitOfWork.Booking.Get(x => x.Id == bookingId, includeProperties: "User,Villa");
+            Booking bookingFromDb = _bookingService.GetBookingById(bookingId);
 
             if (bookingFromDb.Status == SD.StatusPending)
             {
@@ -135,9 +137,8 @@ namespace VacaBook.Web.Controllers
 
                 if (session.PaymentStatus == "paid")
                 {
-                    _unitOfWork.Booking.UpdateStatus(bookingFromDb.Id, SD.StatusApproved, 0);
-                    _unitOfWork.Booking.UpdatePaymentId(bookingFromDb.Id, session.Id, session.PaymentIntentId);
-                    _unitOfWork.Save();
+                    _bookingService.UpdateStatus(bookingFromDb.Id, SD.StatusApproved, 0);
+                    _bookingService.UpdatePaymentId(bookingFromDb.Id, session.Id, session.PaymentIntentId);
                 }
             }
 
@@ -147,13 +148,13 @@ namespace VacaBook.Web.Controllers
         [Authorize]
         public IActionResult BookingDetails(int bookingId)
         {
-            Booking bookingFromDb = _unitOfWork.Booking.Get(x => x.Id == bookingId, includeProperties: "User,Villa");
+            Booking bookingFromDb = _bookingService.GetBookingById(bookingId);
 
             if (bookingFromDb.VillaNumber == 0 && bookingFromDb.Status == SD.StatusApproved)
             {
                 var availableVillaNumber = AssignAvailableVillaNumberByVilla(bookingFromDb.VillaId);
 
-                bookingFromDb.VillaNumbers = _unitOfWork.VillaNumber.GetAll(x => x.VillaId == bookingFromDb.VillaId
+                bookingFromDb.VillaNumbers = _villaNumberService.GetAllVillaNumbers().Where(x => x.VillaId == bookingFromDb.VillaId
                 && availableVillaNumber.Any(u => u == x.Villa_Number)).ToList();
             }
 
@@ -174,7 +175,7 @@ namespace VacaBook.Web.Controllers
             document.Open(fileStream, FormatType.Automatic);
 
             //Update Template
-            Booking bookingFromDb = _unitOfWork.Booking.Get(x => x.Id == id, includeProperties: "User,Villa");
+            Booking bookingFromDb = _bookingService.GetBookingById(id);
 
             TextSelection textSelection = document.Find("xx_customer_name", false, true);
             WTextRange textRange = textSelection.GetAsOneRange();
@@ -241,7 +242,7 @@ namespace VacaBook.Web.Controllers
             row1.Cells[3].AddParagraph().AppendText(bookingFromDb.TotalCost.ToString("c"));
             row1.Cells[3].Width = 80;
 
-            if(bookingFromDb.VillaNumber > 0)
+            if (bookingFromDb.VillaNumber > 0)
             {
                 WTableRow row2 = table.Rows[2];
                 row2.Cells[0].Width = 80;
@@ -293,8 +294,7 @@ namespace VacaBook.Web.Controllers
         [Authorize(Roles = SD.Role_Admin)]
         public IActionResult CheckIn(Booking booking)
         {
-            _unitOfWork.Booking.UpdateStatus(booking.Id, SD.StatusCheckedIn, booking.VillaNumber);
-            _unitOfWork.Save();
+            _bookingService.UpdateStatus(booking.Id, SD.StatusCheckedIn, booking.VillaNumber);
             TempData["success"] = "Booking Updated Successfully";
             return RedirectToAction(nameof(BookingDetails), new { bookingId = booking.Id });
         }
@@ -303,8 +303,7 @@ namespace VacaBook.Web.Controllers
         [Authorize(Roles = SD.Role_Admin)]
         public IActionResult CheckOut(Booking booking)
         {
-            _unitOfWork.Booking.UpdateStatus(booking.Id, SD.StatusCompleted, booking.VillaNumber);
-            _unitOfWork.Save();
+            _bookingService.UpdateStatus(booking.Id, SD.StatusCompleted, booking.VillaNumber);
             TempData["success"] = "Booking Completed Successfully";
             return RedirectToAction(nameof(BookingDetails), new { bookingId = booking.Id });
         }
@@ -313,8 +312,7 @@ namespace VacaBook.Web.Controllers
         [Authorize(Roles = SD.Role_Admin)]
         public IActionResult CancelBooking(Booking booking)
         {
-            _unitOfWork.Booking.UpdateStatus(booking.Id, SD.StatusCancelled, 0);
-            _unitOfWork.Save();
+            _bookingService.UpdateStatus(booking.Id, SD.StatusCancelled, 0);
             TempData["success"] = "Booking Cancelled Successfully";
             return RedirectToAction(nameof(BookingDetails), new { bookingId = booking.Id });
         }
@@ -323,9 +321,9 @@ namespace VacaBook.Web.Controllers
         {
             List<int> availableVillaNumbers = new();
 
-            var villaNumbers = _unitOfWork.VillaNumber.GetAll(x => x.VillaId == villaId);
+            var villaNumbers = _villaNumberService.GetAllVillaNumbers().Where(x => x.VillaId == villaId);
 
-            var checkedInVilla = _unitOfWork.Booking.GetAll(x => x.VillaId == villaId && x.Status == SD.StatusCheckedIn).Select(x => x.VillaNumber);
+            var checkedInVilla = _bookingService.GetCheckedInVillaNumbers(villaId);
 
             foreach (var villaNumber in villaNumbers)
             {
@@ -344,23 +342,18 @@ namespace VacaBook.Web.Controllers
         public IActionResult GetAll(string status)
         {
             IEnumerable<Booking> objBookings;
-
-            if (User.IsInRole(SD.Role_Admin))
+            string userId = "";
+            if (string.IsNullOrEmpty(status))
             {
-                objBookings = _unitOfWork.Booking.GetAll(includeProperties: "User,Villa");
+                status = "";
             }
-            else
+            if (!User.IsInRole(SD.Role_Admin))
             {
                 var claimsIdentity = (ClaimsIdentity)User.Identity;
-                var userId = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier).Value;
-
-                objBookings = _unitOfWork.Booking.GetAll(x => x.UserId == userId, includeProperties: "User,Villa");
+                userId = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier).Value;
             }
+            objBookings = _bookingService.GetAllBookings(userId, status);
 
-            if (!string.IsNullOrEmpty(status))
-            {
-                objBookings = objBookings.Where(x => x.Status.ToLower().Equals(status.ToLower()));
-            }
             return Json(new { data = objBookings });
         }
 

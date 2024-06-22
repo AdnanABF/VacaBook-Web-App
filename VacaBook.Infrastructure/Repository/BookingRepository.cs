@@ -23,41 +23,5 @@ namespace VacaBook.Infrastructure.Repository
         {
             _dbContext.Bookings.Update(entity);
         }
-
-        public void UpdatePaymentId(int bookingId, string sessionId, string paymentIntentId)
-        {
-            var bookingFromDb = _dbContext.Bookings.FirstOrDefault(x => x.Id == bookingId);
-            if (bookingFromDb != null)
-            {
-                if (!string.IsNullOrEmpty(sessionId))
-                {
-                    bookingFromDb.SessionId = sessionId;
-                }
-                if (!string.IsNullOrEmpty(paymentIntentId))
-                {
-                    bookingFromDb.PaymentIntentId = paymentIntentId;
-                    bookingFromDb.PaymentDate = DateTime.Now;
-                    bookingFromDb.IsPaymentSuccessful = true;
-                }
-            }
-        }
-
-        public void UpdateStatus(int bookingId, string bookingStatus, int villaNumber = 0)
-        {
-            var bookingFromDb = _dbContext.Bookings.FirstOrDefault(x => x.Id == bookingId);
-            if (bookingFromDb != null)
-            {
-                bookingFromDb.Status = bookingStatus;
-                if (bookingStatus == SD.StatusCheckedIn)
-                {
-                    bookingFromDb.VillaNumber = villaNumber;
-                    bookingFromDb.ActualCheckInDate = DateTime.Now;
-                }
-                if (bookingStatus == SD.StatusCompleted)
-                {
-                    bookingFromDb.ActualCheckOutDate = DateTime.Now;
-                }
-            }
-        }
     }
 }

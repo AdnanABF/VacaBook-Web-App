@@ -50,7 +50,7 @@ namespace VacaBook.Infrastructure.Repository
             {
                 foreach (var prop in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
                 {
-                    query = query.Include(prop);
+                    query = query.Include(prop.Trim());
                 }
             }
             return query.FirstOrDefault();
@@ -75,7 +75,7 @@ namespace VacaBook.Infrastructure.Repository
             {
                 foreach (var prop in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
                 {
-                    query = query.Include(prop);
+                    query = query.Include(prop.Trim());
                 }
             }
             return query.ToList();
